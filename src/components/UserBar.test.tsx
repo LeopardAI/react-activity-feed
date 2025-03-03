@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent } from '../utils/test-utils';
 import moment from 'moment';
 
 import { TranslationProvider } from '../context/TranslationContext';

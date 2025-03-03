@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 
 import { FollowButton } from './FollowButton';

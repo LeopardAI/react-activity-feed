@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render } from '../../utils/test-utils';
 import { StatusUpdateForm } from './StatusUpdateForm';
 import { I18n } from 'emoji-mart';
 import { EmojiPicker } from '../EmojiPicker';

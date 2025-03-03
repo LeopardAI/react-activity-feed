@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { render } from '@testing-library/react';
+import { render } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 
 import { DropdownPanel } from './DropdownPanel';

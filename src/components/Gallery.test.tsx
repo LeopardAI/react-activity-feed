@@ -1,12 +1,12 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 
 import { Gallery } from './Gallery';
 
 jest.mock(
-  'react-image-lightbox',
+  'react-18-image-lightbox',
   // eslint-disable-next-line react/display-name
   () => ({ onCloseRequest, mainSrc }: { onCloseRequest: () => void; mainSrc?: string }) => (
     <div onClick={onCloseRequest}>

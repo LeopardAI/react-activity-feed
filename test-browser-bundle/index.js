@@ -20,7 +20,8 @@ describe('Browser build', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
 
-    ReactDOM.render(React.createElement(StreamApp, { appId, apiKey, token }, 'hello from beyond'), container);
+    const root = ReactDOM.createRoot(container);
+    root.render(React.createElement(StreamApp, { appId, apiKey, token }, 'hello from beyond'));
 
     await sleep(1000); // wait for react to flush
     expect(container.textContent).to.equal('hello from beyond');

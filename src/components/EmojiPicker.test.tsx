@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 
 import { EmojiPicker } from './EmojiPicker';

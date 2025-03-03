@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import Lightbox from 'react-image-lightbox';
+import Lightbox from 'react-18-image-lightbox';
 
 import { PropsWithElementAttributes } from '../utils';
 

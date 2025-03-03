@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { fireEvent, render, act } from '@testing-library/react';
+import { fireEvent, render, act } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 import { CommentField, CommentFieldProps } from './CommentField';
 import { FeedProvider } from '../context';

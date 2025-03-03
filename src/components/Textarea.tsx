@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
-import ReactTextareaAutocomplete, { TriggerType } from '@webscopeio/react-textarea-autocomplete';
+// Use the types from @types/webscopeio__react-textarea-autocomplete but import from the new package
+// @ts-ignore - Using types from the original package but importing from the forked package
+import ReactTextareaAutocomplete, { TriggerType } from 'react-textarea-autocomplete';
 import { LoadingIndicator } from 'react-file-utils';
 import { BaseEmoji } from 'emoji-mart';
 import { UR } from 'getstream';
 import { Data as EmojiDataSet } from 'emoji-mart';
-// @ts-expect-error
+// @ts-ignore - Missing type definitions for emoji-mart internals
 import EmojiIndex from 'emoji-mart/dist/utils/emoji-index/nimble-emoji-index';
 import defaultEmojiData from '../utils/emojiData';
 import { PropsWithElementAttributes } from '../utils';
@@ -32,23 +34,21 @@ export type TextareaProps = PropsWithElementAttributes<{
 
 const emojiTrigger: (emojiData: EmojiDataSet) => TriggerType<BaseEmoji> = (emojiData) => {
   const emojiIndex = new EmojiIndex(emojiData);
-
   return {
     ':': {
-      output: (item) => ({ key: item.id, text: item.native, caretPosition: 'next' }),
       dataProvider: (token: string) => {
-        // condition extracted from emoji-mart to circumvent the bug in the emoji-mart package
-        if (['-', '-1'].includes(token)) {
-          return [emojiIndex.emojis['-1']];
-        }
-        return (emojiIndex.search(token) || []).slice(0, 10) as BaseEmoji[];
+        return emojiIndex.search(token) || [];
       },
-      component: function AutocompleteItem({ entity: { id, native } }) {
-        return (
-          <div>
-            {native} {id}
-          </div>
-        );
+      // Define a proper type for item
+      output: (item: BaseEmoji) => ({ key: item.id, text: item.native, caretPosition: 'next' }),
+      match: /\B:([-+\w]*)$/,
+      minChar: 1,
+      component: function AutocompleteItem({ entity }: { entity: { id: string; native: string } }) {
+        const emoji = emojiData.emojis[entity.id];
+        if (emoji) {
+          return <div>{entity.native}</div>;
+        }
+        return null;
       },
     },
   };
@@ -67,23 +67,24 @@ export const Textarea = ({
   className,
   style,
 }: TextareaProps) => {
-  const emoji = useMemo(() => emojiTrigger(emojiData), []);
+  const emojiReactTextareaAutocompleteProps = useMemo(() => {
+    return {
+      trigger: { ...emojiTrigger(emojiData), ...trigger },
+      loadingComponent: LoadingIndicator,
+      minChar: 0,
+      innerRef: (el: HTMLTextAreaElement) => {
+        if (typeof innerRef === 'function') {
+          innerRef(el);
+        } else if (innerRef) {
+          innerRef.current = el;
+        }
+      },
+    };
+  }, [emojiData, innerRef, trigger]);
 
   return (
     <ReactTextareaAutocomplete
-      loadingComponent={LoadingIndicator}
-      // @ts-expect-error
-      trigger={{ ...emoji, ...trigger }}
-      innerRef={
-        innerRef &&
-        ((el) => {
-          if (typeof innerRef === 'function') {
-            innerRef(el);
-          } else if (innerRef !== null) {
-            innerRef.current = el;
-          }
-        })
-      }
+      {...emojiReactTextareaAutocompleteProps}
       rows={rows}
       maxLength={maxLength}
       className={classNames('raf-textarea__textarea', className)}

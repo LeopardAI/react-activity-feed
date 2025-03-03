@@ -1,3 +1,6 @@
+// Re-export React 18 compatibility helpers
+export { render, unmountComponentAtNode, getRoot } from './utils/react18-compatibility';
+
 // Top level components
 export * from './context';
 export * from './components/FlatFeed';
