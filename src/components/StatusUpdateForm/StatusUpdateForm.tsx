@@ -74,7 +74,7 @@ export function StatusUpdateForm<
   CT extends UR = UR,
   RT extends UR = UR,
   CRT extends UR = UR,
-  PT extends UR = UR
+  PT extends UR = UR,
 >({
   feedGroup = 'user',
   activityVerb = 'post',
@@ -105,7 +105,7 @@ export function StatusUpdateForm<
     <Panel style={style} className={className}>
       <form onSubmit={state.onSubmitForm}>
         <ImageDropzone handleFiles={state.uploadNewFiles}>
-          <PanelHeading>{Header ?? <Title>{t('New Post')}</Title>}</PanelHeading>
+          <PanelHeading>{Header ?? <Title>{String(t('New Post'))}</Title>}</PanelHeading>
 
           <PanelContent>
             <div style={{ display: 'flex' }}>
@@ -120,7 +120,7 @@ export function StatusUpdateForm<
                 innerRef: state.textInputRef,
                 onChange: state.onChange,
                 onPaste: state.onPaste,
-                placeholder: t('Type your post...'),
+                placeholder: String(t('Type your post...')),
                 trigger,
                 value: state.text,
               })}
@@ -128,7 +128,7 @@ export function StatusUpdateForm<
 
             {state.isOgScraping && (
               <div className="raf-status-update-form__og-loading">
-                <LoadingIndicator /> {t('Getting website data...')}
+                <LoadingIndicator /> {String(t('Getting website data...'))}
               </div>
             )}
 
@@ -200,7 +200,7 @@ export function StatusUpdateForm<
               </div>
 
               <Button type="submit" buttonStyle="primary" loading={state.submitting} disabled={!state.canSubmit()}>
-                {t('Post')}
+                {String(t('Post'))}
               </Button>
             </div>
           </PanelFooter>

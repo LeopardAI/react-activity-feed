@@ -1,5 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+// For compatibility with both React 17 and 18
+import * as ReactDOMModule from 'react-dom';
 // @ts-ignore - Ignore the missing declaration file for react-dom/client
 import { createRoot } from 'react-dom/client';
 
@@ -28,7 +29,7 @@ export function render(element: React.ReactNode, container: Element | DocumentFr
   } else {
     // React 17 approach (fallback)
     // @ts-ignore - ReactDOM.render accepts ReactNode in practice
-    ReactDOM.render(element, container, callback);
+    ReactDOMModule.render(element, container, callback);
   }
 }
 
@@ -45,7 +46,7 @@ export function unmountComponentAtNode(container: Element): boolean {
     return false;
   } else {
     // React 17 approach (fallback)
-    return ReactDOM.unmountComponentAtNode(container);
+    return ReactDOMModule.unmountComponentAtNode(container);
   }
 }
 
@@ -62,9 +63,9 @@ export function getRoot(container: Element): { render: (element: React.ReactNode
     return {
       render: (element: React.ReactNode) => {
         // @ts-ignore - ReactDOM.render accepts ReactNode in practice
-        ReactDOM.render(element, container);
+        ReactDOMModule.render(element, container);
       },
-      unmount: () => ReactDOM.unmountComponentAtNode(container),
+      unmount: () => ReactDOMModule.unmountComponentAtNode(container),
     };
   }
 }

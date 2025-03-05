@@ -18,7 +18,7 @@ export const LoadMoreButton = ({ onClick, refreshing = false, children, classNam
   return (
     <div className={classNames('raf-load-more-button', className)} style={style}>
       <Button onClick={onClick} buttonStyle="info" disabled={refreshing} loading={refreshing}>
-        {children ? children : t('Load more')}
+        {children ? children : String(t('Load more'))}
       </Button>
     </div>
   );

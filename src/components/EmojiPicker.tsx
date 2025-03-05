@@ -1,47 +1,74 @@
 import React, { useRef, useState } from 'react';
 import classNames from 'classnames';
-import { Data as EmojiDataSet, EmojiData, I18n } from 'emoji-mart';
-// @ts-expect-error
-import NimbleEmojiPicker from 'emoji-mart/dist/components/picker/nimble-picker.js';
+// Use the new emoji-mart packages, but only import what we need
+import Picker from '@emoji-mart/react';
 
 import defaultEmojiData from '../utils/emojiData';
 import { useTranslationContext } from '../context';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import { EmojiIcon } from './Icons';
 import { TFunction } from 'i18next';
-import { PartialI18n } from 'emoji-mart/dist-es/utils/shared-props';
+// Create our own interface for PartialI18n
 import { PropsWithElementAttributes } from '../utils';
+
+// Define our own interfaces based on emoji-mart structure
+interface EmojiData {
+  [key: string]: any;
+  id: string;
+  native: string;
+  unified: string;
+  shortcodes?: string;
+}
+
+interface PartialI18n {
+  categories?: {
+    activity?: string;
+    custom?: string;
+    flags?: string;
+    foods?: string;
+    nature?: string;
+    objects?: string;
+    people?: string;
+    places?: string;
+    recent?: string;
+    search?: string;
+    symbols?: string;
+  };
+  categorieslabel?: string;
+  clear?: string;
+  notfound?: string;
+  search?: string;
+  skintext?: string;
+}
 
 export type EmojiPickerProps = PropsWithElementAttributes<{
   /** Override the default emoji dataset, library has a light set of emojis
    * to show more emojis use your own or emoji-mart sets
    * https://github.com/missive/emoji-mart#datasets
    */
-  emojiData?: EmojiDataSet;
+  emojiData?: any; // Using any to avoid type issues
   i18n?: PartialI18n;
   onSelect?: (emoji: EmojiData) => void;
 }>;
 
-export const getEmojiPickerFieldsTranslations = (t: TFunction): I18n => ({
-  search: t('Search'),
-  // todo: remove after fixed I18n type definition in emoji-mart package
-  // @ts-expect-error
-  clear: t('Clear'),
-  notfound: t('No emoji found'),
-  skintext: t('Choose your default skin tone'),
-  categorieslabel: t('Emoji categories'),
+export const getEmojiPickerFieldsTranslations = (t: TFunction): PartialI18n => ({
+  search: t('Search') as string,
+  clear: t('Clear') as string,
+  notfound: t('No emoji found') as string,
+  skintext: t('Choose your default skin tone') as string,
+  categorieslabel: t('Emoji categories') as string,
   categories: {
-    search: t('Search Results'),
-    recent: t('Frequently Used'),
-    people: t('Smileys & Emotion'),
-    nature: t('Animals & Nature'),
-    foods: t('Food & Drink'),
-    activity: t('Activity'),
-    places: t('Travel & Places'),
-    objects: t('Objects'),
-    symbols: t('Symbols'),
-    flags: t('Flags'),
-    custom: t('Custom'),
+    search: t('Search Results') as string,
+    recent: t('Frequently Used') as string,
+    people: t('Smileys & Emotion') as string,
+    nature: t('Animals & Nature') as string,
+    foods: t('Food & Drink') as string,
+    activity: t('Activity') as string,
+    places: t('Travel & Places') as string,
+    objects: t('Objects') as string,
+    symbols: t('Symbols') as string,
+    flags: t('Flags') as string,
+    custom: t('Custom') as string,
   },
 });
 
@@ -56,13 +83,7 @@ export const EmojiPicker = ({ emojiData = defaultEmojiData, i18n, onSelect, clas
     <div className={classNames('raf-emoji-picker', className)} style={style}>
       {open && (
         <div data-testid="picker-wrapper" className="raf-emoji-picker__container" ref={emojiPicker}>
-          <NimbleEmojiPicker
-            i18n={i18n ?? getEmojiPickerFieldsTranslations(t)}
-            emoji="point_up"
-            title={t('Pick your emoji')}
-            data={emojiData}
-            onSelect={onSelect}
-          />
+          <Picker i18n={i18n ?? getEmojiPickerFieldsTranslations(t)} data={emojiData} onEmojiSelect={onSelect} />
         </div>
       )}
       <div role="button" onClick={() => setOpen(true)} className="raf-emoji-picker__button">

@@ -28,7 +28,7 @@ type ErrorDetail = UR & {
 };
 
 export type ErrorHandler = (
-  error: Error | StreamApiError | unknown,
+  error: Error | StreamApiError<UR> | unknown,
   type: NetworkRequestTypes,
   details: ErrorDetail,
 ) => void;

@@ -2,8 +2,29 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { render } from '../../utils/test-utils';
 import { StatusUpdateForm } from './StatusUpdateForm';
-import { I18n } from 'emoji-mart';
 import { EmojiPicker } from '../EmojiPicker';
+
+// Define our own interface for emoji i18n
+interface EmojiI18n {
+  categories?: {
+    activity?: string;
+    custom?: string;
+    flags?: string;
+    foods?: string;
+    nature?: string;
+    objects?: string;
+    people?: string;
+    places?: string;
+    recent?: string;
+    search?: string;
+    symbols?: string;
+  };
+  categorieslabel?: string;
+  clear?: string;
+  notfound?: string;
+  search?: string;
+  skintext?: string;
+}
 
 const customTextareaPlaceholder = 'Custom placeholder';
 const Textarea = jest.fn(() => <textarea placeholder={customTextareaPlaceholder} />);
@@ -19,9 +40,8 @@ describe('StatusUpdateForm', () => {
   beforeEach(jest.clearAllMocks);
 
   it('passes i18n prop to EmojiPicker', () => {
-    const emojiI18n: Partial<I18n> = {
+    const emojiI18n: Partial<EmojiI18n> = {
       search: 'Custom Search String',
-      // @ts-ignore
       categories: { recent: 'Recent Emojis' },
     };
 

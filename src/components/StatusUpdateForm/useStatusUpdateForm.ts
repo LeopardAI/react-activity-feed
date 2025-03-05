@@ -13,7 +13,6 @@ import _difference from 'lodash/difference';
 import _includes from 'lodash/includes';
 import { find as linkifyFind } from 'linkifyjs';
 import { useDebouncedCallback } from 'use-debounce';
-import { BaseEmoji, EmojiData } from 'emoji-mart';
 import { UploadState } from 'react-file-utils';
 import { NewActivity, OGAPIResponse, StreamClient, UR } from 'getstream';
 
@@ -26,6 +25,20 @@ import {
   inputValueFromEvent,
 } from '../../utils';
 import { NetworkRequestTypes } from 'utils/errors';
+
+// Define types that were previously imported from emoji-mart
+interface BaseEmoji {
+  [key: string]: any;
+  id: string;
+  native: string;
+  colons?: string;
+}
+
+interface EmojiData {
+  [key: string]: any;
+  id: string;
+  native?: string;
+}
 
 type Og = {
   dismissed: boolean;
@@ -368,7 +381,7 @@ export function useStatusUpdateForm<
   CT extends UR = UR,
   RT extends UR = UR,
   CRT extends UR = UR,
-  PT extends UR = UR
+  PT extends UR = UR,
 >({
   activityVerb,
   feedGroup,
@@ -392,16 +405,8 @@ export function useStatusUpdateForm<
 
   const { text, setText, insertText, onSelectEmoji, textInputRef } = useTextArea();
 
-  const {
-    resetOg,
-    setActiveOg,
-    ogActiveUrl,
-    activeOg,
-    dismissOg,
-    availableOg,
-    isOgScraping,
-    handleOgDebounced,
-  } = useOg({ client: client as StreamClient, logErr });
+  const { resetOg, setActiveOg, ogActiveUrl, activeOg, dismissOg, availableOg, isOgScraping, handleOgDebounced } =
+    useOg({ client: client as StreamClient, logErr });
 
   const {
     images,

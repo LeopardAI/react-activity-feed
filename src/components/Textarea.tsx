@@ -4,22 +4,61 @@ import classNames from 'classnames';
 // @ts-ignore - Using types from the original package but importing from the forked package
 import ReactTextareaAutocomplete, { TriggerType } from 'react-textarea-autocomplete';
 import { LoadingIndicator } from 'react-file-utils';
-import { BaseEmoji } from 'emoji-mart';
 import { UR } from 'getstream';
-import { Data as EmojiDataSet } from 'emoji-mart';
-// @ts-ignore - Missing type definitions for emoji-mart internals
-import EmojiIndex from 'emoji-mart/dist/utils/emoji-index/nimble-emoji-index';
+// Remove unused import
 import defaultEmojiData from '../utils/emojiData';
 import { PropsWithElementAttributes } from '../utils';
+
+// Define interfaces based on emoji-mart structure
+interface EmojiData {
+  aliases: Record<string, string>;
+  emojis: Record<string, any>;
+  originalPool?: boolean;
+}
+
+interface EmojiEntity {
+  id: string;
+  native: string;
+  unified: string;
+  shortcodes?: string;
+}
+
+// Create a simple emoji index for search functionality
+class EmojiIndex {
+  constructor(private emojiData: EmojiData) {}
+
+  search(value: string) {
+    if (!value) return [];
+
+    const results: EmojiEntity[] = [];
+    const searchValue = value.toLowerCase();
+
+    // Simple search based on emoji id starts with the search value
+    Object.entries(this.emojiData.emojis || {}).forEach(([id, emoji]: [string, any]) => {
+      if (id.toLowerCase().startsWith(searchValue)) {
+        results.push({
+          id,
+          native: emoji.native || emoji.unicode,
+          unified: emoji.unified || '',
+          shortcodes: emoji.shortcodes || id,
+        });
+      }
+    });
+
+    return results;
+  }
+}
 
 export type TextareaProps = PropsWithElementAttributes<{
   /** Override the default emoji dataset, library has a light set of emojis
    * to show more emojis use your own or emoji-mart sets
    * https://github.com/missive/emoji-mart#datasets
    */
-  emojiData?: EmojiDataSet;
+  emojiData?: EmojiData;
   /** A ref that is bound to the textarea element */
-  innerRef?: React.MutableRefObject<HTMLTextAreaElement | undefined> | ((el: HTMLTextAreaElement) => void);
+  innerRef?:
+    | React.MutableRefObject<HTMLTextAreaElement | undefined | null>
+    | ((el: HTMLTextAreaElement | null) => void);
   maxLength?: number;
   onChange?: (event: React.SyntheticEvent<HTMLTextAreaElement>) => void;
   onPaste?: (event: React.ClipboardEvent<HTMLTextAreaElement>) => void;
@@ -32,20 +71,19 @@ export type TextareaProps = PropsWithElementAttributes<{
   value?: string;
 }>;
 
-const emojiTrigger: (emojiData: EmojiDataSet) => TriggerType<BaseEmoji> = (emojiData) => {
+const emojiTrigger = (emojiData: EmojiData): TriggerType<EmojiEntity> => {
+  // @ts-ignore - EmojiIndex is not properly typed
   const emojiIndex = new EmojiIndex(emojiData);
   return {
     ':': {
       dataProvider: (token: string) => {
         return emojiIndex.search(token) || [];
       },
-      // Define a proper type for item
-      output: (item: BaseEmoji) => ({ key: item.id, text: item.native, caretPosition: 'next' }),
+      output: (item: EmojiEntity) => ({ key: item.id, text: item.native, caretPosition: 'next' }),
       match: /\B:([-+\w]*)$/,
       minChar: 1,
-      component: function AutocompleteItem({ entity }: { entity: { id: string; native: string } }) {
-        const emoji = emojiData.emojis[entity.id];
-        if (emoji) {
+      component: function AutocompleteItem({ entity }: { entity: EmojiEntity }) {
+        if (entity && emojiData.emojis && entity.id in emojiData.emojis) {
           return <div>{entity.native}</div>;
         }
         return null;
@@ -55,7 +93,7 @@ const emojiTrigger: (emojiData: EmojiDataSet) => TriggerType<BaseEmoji> = (emoji
 };
 
 export const Textarea = ({
-  emojiData = defaultEmojiData,
+  emojiData = defaultEmojiData as unknown as EmojiData,
   innerRef,
   maxLength,
   onChange,
@@ -72,11 +110,11 @@ export const Textarea = ({
       trigger: { ...emojiTrigger(emojiData), ...trigger },
       loadingComponent: LoadingIndicator,
       minChar: 0,
-      innerRef: (el: HTMLTextAreaElement) => {
+      innerRef: (el: HTMLTextAreaElement | null) => {
         if (typeof innerRef === 'function') {
           innerRef(el);
         } else if (innerRef) {
-          innerRef.current = el;
+          innerRef.current = el || undefined;
         }
       },
     };

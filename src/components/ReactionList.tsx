@@ -34,7 +34,7 @@ export const ReactionList = <
   CT extends UR = UR,
   RT extends UR = UR,
   CRT extends UR = UR,
-  PT extends UR = UR
+  PT extends UR = UR,
 >({
   activityId,
   Reaction,
@@ -49,15 +49,15 @@ export const ReactionList = <
   const activityPath = defaultActivityPath || feed.getActivityPath(activityId);
   const orderPrefix = oldestToNewest ? 'oldest' : 'latest';
   const reactionsExtra = feed.activities.getIn([...activityPath, orderPrefix + '_reactions_extra']);
-  const hasNextPage = reactionsExtra ? !!reactionsExtra.getIn([reactionKind, 'next'], '') : true;
+  const hasNextPage = reactionsExtra ? (!!(reactionsExtra as any).getIn([reactionKind, 'next'], '') as boolean) : true;
   let reactions = feed.activities.getIn(
     [...activityPath, orderPrefix + '_reactions', reactionKind],
     immutable.List(),
-  ) as immutable.List<immutable.Record<EnrichedReaction>>;
+  ) as immutable.List<immutable.Record<EnrichedReaction<RT, CRT, UT>>>;
   const refreshing = feed.activities.getIn(
     [...activityPath, orderPrefix + '_reactions_extra', reactionKind, 'refreshing'],
     false,
-  );
+  ) as boolean;
 
   if (reverseOrder) reactions = reactions.reverse();
 
@@ -80,8 +80,8 @@ export const ReactionList = <
         reverse: reverseOrder,
         children: reactions.map((reaction) =>
           smartRender(Reaction, {
-            reaction: reaction.toJS(),
-            key: reaction.get('id'),
+            reaction: reaction.toJS() as EnrichedReaction<RT, CRT, UT>,
+            key: reaction.get('id') as string,
           }),
         ),
       })}

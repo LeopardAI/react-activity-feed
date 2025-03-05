@@ -5,15 +5,15 @@ import '@testing-library/jest-dom';
 
 import { Gallery } from './Gallery';
 
-jest.mock(
-  'react-18-image-lightbox',
-  // eslint-disable-next-line react/display-name
-  () => ({ onCloseRequest, mainSrc }: { onCloseRequest: () => void; mainSrc?: string }) => (
+jest.mock('react-18-image-lightbox', () => {
+  const MockLightbox = ({ onCloseRequest, mainSrc }: { onCloseRequest: () => void; mainSrc?: string }) => (
     <div onClick={onCloseRequest}>
       lightbox <span>{mainSrc}</span>
     </div>
-  ),
-);
+  );
+  MockLightbox.displayName = 'MockLightbox';
+  return MockLightbox;
+});
 
 const testData = [
   'https://source.unsplash.com/random/800x600',

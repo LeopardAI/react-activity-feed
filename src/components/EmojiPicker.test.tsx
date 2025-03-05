@@ -5,30 +5,36 @@ import '@testing-library/jest-dom';
 
 import { EmojiPicker } from './EmojiPicker';
 import { Streami18n } from '../i18n/Streami18n';
-import { EmojiData, I18n } from 'emoji-mart';
-import { Data as EmojiDataSet } from 'emoji-mart/dist-es/utils/data';
 import { TranslationContextValue, TranslationProvider } from '../context/TranslationContext';
 
-interface SupportedNimblePickerProps {
-  data: EmojiDataSet;
-  emoji: string;
-  i18n: I18n;
-  onSelect: (emoji: EmojiData) => void;
-  title: string;
+// Define our own interfaces
+interface EmojiData {
+  [key: string]: any;
+  id: string;
+  native: string;
+  unified: string;
+  shortcodes?: string;
 }
 
-jest.mock(
-  'emoji-mart/dist/components/picker/nimble-picker.js',
-  // eslint-disable-next-line react/display-name
-  () => ({ i18n }: SupportedNimblePickerProps) => {
+interface SupportedPickerProps {
+  data: any;
+  i18n: any;
+  onEmojiSelect: (emoji: EmojiData) => void;
+}
+
+// Mock the new emoji-mart/react package
+jest.mock('@emoji-mart/react', () => {
+  const MockEmojiPicker = ({ i18n }: SupportedPickerProps) => {
     return (
       <div>
         emoji-picker-props
         <div>{JSON.stringify(i18n).replace(/\\"/g, '"')}</div>
       </div>
     );
-  },
-);
+  };
+  MockEmojiPicker.displayName = 'MockEmojiPicker';
+  return MockEmojiPicker;
+});
 
 describe('EmojiPicker', () => {
   it('renders correctly with default props', () => {
@@ -159,7 +165,6 @@ describe('EmojiPicker', () => {
       <EmojiPicker
         i18n={{
           search: 'Custom Searchh',
-          // @ts-expect-error
           clear: 'Custom Clear',
           skintext: 'Custom Skintext',
           categories: { recent: 'Custom Recent' },

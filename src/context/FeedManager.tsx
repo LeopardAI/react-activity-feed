@@ -1,4 +1,5 @@
 /* eslint-disable sonarjs/no-identical-functions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import immutable from 'immutable';
 import URL from 'url-parse';
 import StreamAnalytics from 'stream-analytics';
@@ -32,7 +33,7 @@ import { DefaultUT, DefaultAT } from './StreamApp';
 import { FeedProps } from './Feed';
 import { Subscription } from 'faye';
 
-type CU = immutable.Collection<unknown, unknown>;
+type CU = immutable.Collection<any, any>;
 
 type MarkAsGroup = boolean | { id: string } | Array<{ id: string }>;
 
@@ -43,7 +44,7 @@ type ResponseResult<
   AT extends DefaultAT = DefaultAT,
   CT extends UR = UR,
   RT extends UR = UR,
-  CRT extends UR = UR
+  CRT extends UR = UR,
 > =
   | FlatActivityEnriched<UT, AT, CT, RT, CRT>
   | AggregatedActivityEnriched<UT, AT, CT, RT, CRT>
@@ -57,7 +58,7 @@ export type FeedManagerProps<
   CT extends UR = UR,
   RT extends UR = UR,
   CRT extends UR = UR,
-  PT extends UR = UR
+  PT extends UR = UR,
 > = FeedProps<UT, AT, CT, RT, CRT, PT> & {
   analyticsClient: StreamAnalytics<UT> | null;
   client: StreamClient<UT, AT, CT, RT, CRT, PT>;
@@ -70,7 +71,7 @@ export type FeedManagerState<
   AT extends DefaultAT = DefaultAT,
   CT extends UR = UR,
   RT extends UR = UR,
-  CRT extends UR = UR
+  CRT extends UR = UR,
 > = {
   activities: immutable.Map<string, immutable.Record<ResponseResult<UT, AT, CT, RT, CRT>>>;
   activityIdToPath: Record<string, Array<string | number>>;
@@ -101,7 +102,7 @@ export class FeedManager<
   CT extends UR = UR,
   RT extends UR = UR,
   CRT extends UR = UR,
-  PT extends UR = UR
+  PT extends UR = UR,
 > {
   registeredCallbacks: Array<UpdateTriggeredCallback>;
 
@@ -248,14 +249,22 @@ export class FeedManager<
       let { activities } = prevState;
       const { reactionIdToPaths } = prevState;
       for (const path of this.getActivityPaths(activity)) {
-        this.removeFoundReactionIdPaths(activities.getIn(path).toJS(), reactionIdToPaths, path);
+        const activityData = activities.getIn(path);
+        if (activityData) {
+          this.removeFoundReactionIdPaths((activityData as any).toJS(), reactionIdToPaths, path);
 
-        activities = activities
-          .updateIn([...path, 'reaction_counts', kind], (v = 0) => v + 1)
-          .updateIn([...path, 'own_reactions', kind], (v = immutable.List()) => v.unshift(enrichedReaction))
-          .updateIn([...path, 'latest_reactions', kind], (v = immutable.List()) => v.unshift(enrichedReaction));
+          activities = activities
+            .updateIn([...path, 'reaction_counts', kind], ((v: any = 0) => v + 1) as any)
+            .updateIn([...path, 'own_reactions', kind], ((v: any = immutable.List()) =>
+              v.unshift(enrichedReaction)) as any)
+            .updateIn([...path, 'latest_reactions', kind], ((v: any = immutable.List()) =>
+              v.unshift(enrichedReaction)) as any);
 
-        this.addFoundReactionIdPaths(activities.getIn(path).toJS(), reactionIdToPaths, path);
+          const updatedActivity = activities.getIn(path);
+          if (updatedActivity) {
+            this.addFoundReactionIdPaths((updatedActivity as any).toJS(), reactionIdToPaths, path);
+          }
+        }
       }
 
       return { activities, reactionIdToPaths };
@@ -285,18 +294,22 @@ export class FeedManager<
       let { activities } = prevState;
       const { reactionIdToPaths } = prevState;
       for (const path of this.getActivityPaths(activity)) {
-        this.removeFoundReactionIdPaths(activities.getIn(path).toJS(), reactionIdToPaths, path);
+        const activityData = activities.getIn(path);
+        if (activityData) {
+          this.removeFoundReactionIdPaths((activityData as any).toJS(), reactionIdToPaths, path);
 
-        activities = activities
-          .updateIn([...path, 'reaction_counts', kind], (v = 0) => v - 1)
-          .updateIn([...path, 'own_reactions', kind], (v = immutable.List()) =>
-            v.remove(v.findIndex((r: CU) => r.get('id') === id)),
-          )
-          .updateIn([...path, 'latest_reactions', kind], (v = immutable.List()) =>
-            v.remove(v.findIndex((r: CU) => r.get('id') === id)),
-          );
+          activities = activities
+            .updateIn([...path, 'reaction_counts', kind], ((v: any = 0) => v - 1) as any)
+            .updateIn([...path, 'own_reactions', kind], ((v: any = immutable.List()) =>
+              v.remove(v.findIndex((r: CU) => r.get('id') === id))) as any)
+            .updateIn([...path, 'latest_reactions', kind], ((v: any = immutable.List()) =>
+              v.remove(v.findIndex((r: CU) => r.get('id') === id))) as any);
 
-        this.addFoundReactionIdPaths(activities.getIn(path).toJS(), reactionIdToPaths, path);
+          const updatedActivity = activities.getIn(path);
+          if (updatedActivity) {
+            this.addFoundReactionIdPaths((updatedActivity as any).toJS(), reactionIdToPaths, path);
+          }
+        }
       }
 
       return { activities, reactionIdToPaths };
@@ -323,7 +336,7 @@ export class FeedManager<
     const currentReactions = this.state.activities.getIn(
       [...this.getActivityPaths(activity)[0], 'own_reactions', kind],
       immutable.List(),
-    );
+    ) as any;
 
     const last = currentReactions.last();
     if (last) {
@@ -368,9 +381,11 @@ export class FeedManager<
       let { activities } = prevState;
       for (const path of this.getReactionPaths(reaction)) {
         activities = activities
-          .updateIn([...path, 'children_counts', kind], (v = 0) => v + 1)
-          .updateIn([...path, 'own_children', kind], (v = immutable.List()) => v.unshift(enrichedReaction))
-          .updateIn([...path, 'latest_children', kind], (v = immutable.List()) => v.unshift(enrichedReaction));
+          .updateIn([...path, 'children_counts', kind], ((v: any = 0) => v + 1) as any)
+          .updateIn([...path, 'own_children', kind], ((v: any = immutable.List()) =>
+            v.unshift(enrichedReaction)) as any)
+          .updateIn([...path, 'latest_children', kind], ((v: any = immutable.List()) =>
+            v.unshift(enrichedReaction)) as any);
       }
 
       return { activities };
@@ -402,13 +417,11 @@ export class FeedManager<
       let { activities } = prevState;
       for (const path of this.getReactionPaths(reaction)) {
         activities = activities
-          .updateIn([...path, 'children_counts', kind], (v = 0) => v - 1)
-          .updateIn([...path, 'own_children', kind], (v = immutable.List()) =>
-            v.remove(v.findIndex((r: CU) => r.get('id') === id)),
-          )
-          .updateIn([...path, 'latest_children', kind], (v = immutable.List()) =>
-            v.remove(v.findIndex((r: CU) => r.get('id') === id)),
-          );
+          .updateIn([...path, 'children_counts', kind], ((v: any = 0) => v - 1) as any)
+          .updateIn([...path, 'own_children', kind], ((v: any = immutable.List()) =>
+            v.remove(v.findIndex((r: any) => r.get('id') === id))) as any)
+          .updateIn([...path, 'latest_children', kind], ((v: any = immutable.List()) =>
+            v.remove(v.findIndex((r: any) => r.get('id') === id))) as any);
       }
 
       return { activities };
@@ -431,7 +444,7 @@ export class FeedManager<
     const currentReactions = this.state.activities.getIn(
       [...this.getReactionPaths(reaction)[0], 'own_children', kind],
       immutable.List(),
-    );
+    ) as any;
 
     const last = currentReactions.last();
     if (last) {
@@ -450,57 +463,61 @@ export class FeedManager<
         // It's an aggregated group we should update the paths of everything in
         // the list
         const groupArrayPath = path.slice(0, -1);
-        activityIdToPath = this.removeFoundActivityIdPath(
-          activities.getIn(groupArrayPath).toJS(),
-          activityIdToPath,
-          groupArrayPath,
-        );
-        activityIdToPaths = this.removeFoundActivityIdPaths(
-          activities.getIn(groupArrayPath).toJS(),
-          activityIdToPaths,
-          groupArrayPath,
-        );
-        reactionIdToPaths = this.removeFoundReactionIdPaths(
-          activities.getIn(groupArrayPath).toJS(),
-          reactionIdToPaths,
-          groupArrayPath,
-        );
+        const groupData = activities.getIn(groupArrayPath);
+        if (groupData) {
+          activityIdToPath = this.removeFoundActivityIdPath(
+            (groupData as any).toJS(),
+            activityIdToPath,
+            groupArrayPath,
+          );
+          activityIdToPaths = this.removeFoundActivityIdPaths(
+            (groupData as any).toJS(),
+            activityIdToPaths,
+            groupArrayPath,
+          );
+          reactionIdToPaths = this.removeFoundReactionIdPaths(
+            (groupData as any).toJS(),
+            reactionIdToPaths,
+            groupArrayPath,
+          );
+        }
       } else {
-        // Otherwise remove all things inside this activity from the path
-        // objects
-        // @ts-expect-error
-        activityIdToPaths = this.removeFoundActivityIdPaths(activities.get(activityId).toJS(), activityIdToPaths, [
-          activityId,
-        ]);
-        // @ts-expect-error
-        reactionIdToPaths = this.removeFoundReactionIdPaths(activities.get(activityId).toJS(), reactionIdToPaths, [
-          activityId,
-        ]);
+        // Otherwise remove all things inside this activity from the path objects
+        const activityData = activities.get(activityId);
+        if (activityData) {
+          activityIdToPaths = this.removeFoundActivityIdPaths((activityData as any).toJS(), activityIdToPaths, [
+            activityId,
+          ]);
+          reactionIdToPaths = this.removeFoundReactionIdPaths((activityData as any).toJS(), reactionIdToPaths, [
+            activityId,
+          ]);
+        }
       }
 
       activities = activities.removeIn(path);
       if (path.length > 1) {
         const groupArrayPath = path.slice(0, -1);
-        if (activities.getIn(groupArrayPath).size === 0) {
-          outerId = path[0];
+        const groupData = activities.getIn(groupArrayPath);
+        if (groupData) {
+          if ((groupData as any).size === 0) {
+            outerId = path[0];
+          } else {
+            outerId = null;
+          }
+          activityIdToPath = this.addFoundActivityIdPath((groupData as any).toJS(), activityIdToPath, groupArrayPath);
+          activityIdToPaths = this.addFoundActivityIdPaths(
+            (groupData as any).toJS(),
+            activityIdToPaths,
+            groupArrayPath,
+          );
+          reactionIdToPaths = this.addFoundReactionIdPaths(
+            (groupData as any).toJS(),
+            reactionIdToPaths,
+            groupArrayPath,
+          );
         } else {
           outerId = null;
         }
-        activityIdToPath = this.addFoundActivityIdPath(
-          activities.getIn(groupArrayPath).toJS(),
-          activityIdToPath,
-          groupArrayPath,
-        );
-        activityIdToPaths = this.addFoundActivityIdPaths(
-          activities.getIn(groupArrayPath).toJS(),
-          activityIdToPaths,
-          groupArrayPath,
-        );
-        reactionIdToPaths = this.addFoundReactionIdPaths(
-          activities.getIn(groupArrayPath).toJS(),
-          reactionIdToPaths,
-          groupArrayPath,
-        );
       }
       if (outerId != null) {
         activityOrder = activityOrder.filter((id) => id !== outerId);
@@ -612,11 +629,10 @@ export class FeedManager<
     response: FeedAPIResponse<UT, AT, CT, RT, CRT>,
   ): immutable.Map<string, immutable.Record<ResponseResult<UT, AT, CT, RT, CRT>>> =>
     immutable.fromJS(
-      // @ts-expect-error
-      response.results.reduce((map: Record<string, ResponseResult>, a: ResponseResult) => {
+      (response.results as any).reduce((map: Record<string, any>, a: any) => {
         map[a.id] = a;
         return map;
-      }, {}),
+      }, {} as Record<string, any>),
     );
 
   responseToActivityIdToPath = (response: FeedAPIResponse<UT, AT, CT, RT, CRT>) => {
@@ -640,7 +656,9 @@ export class FeedManager<
   ) => {
     const map = previous;
     const currentPath: Array<string | number> = [];
-    function addFoundActivities(obj: ResponseResult | ResponseResult[]) {
+    function addFoundActivities(
+      obj: ResponseResult<UT, AT, CT, RT, CRT> | ResponseResult<UT, AT, CT, RT, CRT>[] | any,
+    ) {
       if (Array.isArray(obj)) {
         obj.forEach((v, i) => {
           currentPath.push(i);
@@ -648,8 +666,7 @@ export class FeedManager<
           currentPath.pop();
         });
       } else if (_isPlainObject(obj)) {
-        // @ts-expect-error
-        if (obj.id && obj.actor && obj.verb && obj.object) {
+        if (obj.id && (obj as any).actor && obj.verb && (obj as any).object) {
           if (!map[obj.id]) {
             map[obj.id] = [];
           }
@@ -657,8 +674,7 @@ export class FeedManager<
         }
         for (const k in obj) {
           currentPath.push(k);
-          // @ts-expect-error
-          addFoundActivities(obj[k]);
+          addFoundActivities((obj as any)[k]);
           currentPath.pop();
         }
       }
@@ -678,7 +694,7 @@ export class FeedManager<
   ) => {
     const map = previous;
     const currentPath: Array<string | number> = [];
-    function addFoundReactions(obj: ResponseResult | ResponseResult[]) {
+    function addFoundReactions(obj: ResponseResult<UT, AT, CT, RT, CRT> | ResponseResult<UT, AT, CT, RT, CRT>[] | any) {
       if (Array.isArray(obj)) {
         obj.forEach((v, i) => {
           currentPath.push(i);
@@ -686,7 +702,6 @@ export class FeedManager<
           currentPath.pop();
         });
       } else if (_isPlainObject(obj)) {
-        // @ts-expect-error
         if (obj.id && obj.kind && obj.data) {
           if (!map[obj.id]) {
             map[obj.id] = [];
@@ -695,8 +710,7 @@ export class FeedManager<
         }
         for (const k in obj) {
           currentPath.push(k);
-          // @ts-expect-error
-          addFoundReactions(obj[k]);
+          addFoundReactions((obj as any)[k]);
           currentPath.pop();
         }
       }
@@ -1034,8 +1048,10 @@ export class FeedManager<
 
       this.setState({ subscription: null });
 
-      // @ts-expect-error
-      subscription?.cancel();
+      const sub = await subscription;
+      if (sub && typeof (sub as any).cancel === 'function') {
+        (sub as any).cancel();
+      }
 
       console.log(`stopped listening to changes in realtime for ${this.feed().id}`);
     } catch (err) {
@@ -1188,7 +1204,7 @@ export class FeedManager<
     const reactions_extra = this.state.activities.getIn([...activityPath, orderPrefix + '_reactions_extra']);
     let nextUrl = 'https://api.stream-io-api.com/';
     if (reactions_extra) {
-      nextUrl = reactions_extra.getIn([kind, 'next'], '');
+      nextUrl = (reactions_extra as any).getIn([kind, 'next'], '');
     } else if (oldestToNewest) {
       // If it's the first request and oldest to newest make sure
       // order is reversed by this trick with a non existant id.
@@ -1217,18 +1233,26 @@ export class FeedManager<
       this.props.errorHandler(e, 'get-reactions-next-page', { options });
       return;
     }
-    this.setState((prevState) => ({
-      activities: prevState.activities
+
+    this.setState((prevState) => {
+      const listLength = (prevState.activities.getIn(latestReactionsPath, immutable.List()) as any).toJS().length;
+      const immutableResults = immutable.fromJS(response.results);
+
+      const activities = prevState.activities
         .setIn(refreshingPath, false)
         .setIn(nextUrlPath, response.next)
-        .updateIn(latestReactionsPath, (v = immutable.List()) => v.concat(immutable.fromJS(response.results))),
-      reactionIdToPaths: this.reactionResponseToReactionIdToPaths(
-        response,
-        prevState.reactionIdToPaths,
-        latestReactionsPath,
-        prevState.activities.getIn(latestReactionsPath, immutable.List()).toJS().length,
-      ),
-    }));
+        .updateIn(latestReactionsPath, ((v: any = immutable.List()) => v.concat(immutableResults)) as any);
+
+      return {
+        activities,
+        reactionIdToPaths: this.reactionResponseToReactionIdToPaths(
+          response,
+          prevState.reactionIdToPaths,
+          latestReactionsPath,
+          listLength,
+        ),
+      };
+    });
   };
 
   refreshUnreadUnseen = async () => {

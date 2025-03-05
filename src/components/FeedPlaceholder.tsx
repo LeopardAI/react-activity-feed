@@ -13,7 +13,7 @@ export const FeedPlaceholder = ({ text, className, style }: FeedPlaceholderProps
 
   return (
     <div className={classNames('raf-feed-placeholder', className)} style={style}>
-      <p>{text || t('No data to display...')}</p>
+      <p>{text || String(t('No data to display...'))}</p>
     </div>
   );
 };

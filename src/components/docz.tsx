@@ -1,8 +1,8 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, PropsWithChildren } from 'react';
 import { StreamApp } from '../context';
 import { NotificationProps } from './Notification';
 
-export const WithExampleStreamApp: FC = ({ children }) => (
+export const WithExampleStreamApp: FC<PropsWithChildren> = ({ children }) => (
   <StreamApp
     apiKey="fpwesm5u2evu"
     appId="64527"

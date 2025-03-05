@@ -16,5 +16,7 @@ jest.mock('react-dom', () => ({
 }));
 
 // Replace the original methods with our compatibility versions
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.render = render;
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.unmountComponentAtNode = unmountComponentAtNode;
