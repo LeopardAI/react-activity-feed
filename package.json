@@ -40,8 +40,7 @@
     "prepare": "yarn run build && husky install",
     "preversion": "yarn install && yarn lint && yarn test",
     "version": "git add -A",
-    "postversion": "git push && git push --tags && npm publish",
-    "postinstall": "node scripts/build-autocomplete.js"
+    "postversion": "git push && git push --tags && npm publish"
   },
   "peerDependencies": {
     "react": "^18.0.0",
